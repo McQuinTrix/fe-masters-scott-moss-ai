@@ -1,20 +1,23 @@
+import { zodFunction } from 'openai/helpers/zod.mjs';
+import type { AIMessage } from '../types';
 import { openai } from './ai';
 
 export const runLLM = async ({
-    userMessage
+    messages,
+    tools,
 }: {
-    userMessage: string
+    messages: AIMessage[],
+    tools: any[],
 }) => {
+    const formattedTools = tools.map(zodFunction);
     const response = await openai.chat.completions.create({
-        model: 'chatgpt-4o-latest',
+        model: 'gpt-4o-mini',
         temperature: 1,
-        messages: [
-            {
-                role: 'user',
-                content: userMessage,
-            }
-        ]
+        messages,
+        tools: formattedTools,
+        tool_choice: 'auto',
+        parallel_tool_calls: false,
     });
 
-    return response.choices[0].message.content
+    return response.choices[0].message
 }
